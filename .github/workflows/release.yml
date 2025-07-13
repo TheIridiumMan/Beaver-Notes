@@ -48,6 +48,6 @@ jobs:
             PUBLISH_FLAG="--publish always"
           fi
 
-          yarn electron-builder build --config electron-builder.config.cjs --win --ia32 $PUBLISH_FLAG
+          yarn electron-builder build --config electron-builder.config.cjs --win --ia32 --publish=never
         env:
           GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
