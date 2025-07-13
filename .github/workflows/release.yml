@@ -52,11 +52,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
       
-      - name: Upload built app artifacts
+      - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: beaver-notes-win32-ia32
-          path: |
-            dist/*.exe
-            dist/*.blockmap
+          name: beaver-notes-installer
+          path: dist/Beaver-notes Setup *.exe
+
+      - name: Upload portable version
+        uses: actions/upload-artifact@v4
+        with:
+          name: beaver-notes-portable
+          path: dist/Beaver-notes-*-portable.exe
+
+      - name: Upload blockmap
+        uses: actions/upload-artifact@v4
+        with:
+          name: beaver-notes-blockmap
+          path: dist/*.blockmap
 
