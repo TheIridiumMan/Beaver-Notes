@@ -22,13 +22,6 @@ const electronBuilderConfig = {
       mimeType: 'application/x-beaver-notes',
     },
   ],
-  publish: [
-    {
-      provider: 'github',
-      releaseType: 'draft',
-      vPrefixedTagName: false,
-    },
-  ],
   win: {
     icon: 'buildResources/icon.ico',
     target: [
