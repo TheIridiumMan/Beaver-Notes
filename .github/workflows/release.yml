@@ -2,9 +2,6 @@ name: Build and Package (32-bit Windows)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -17,11 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (32-bit)
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          architecture: x86  # Ensures 32-bit Node.js
+          architecture: x86
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -43,7 +40,7 @@ jobs:
             echo "publish=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build and conditionally publish 32-bit Windows app
+      - name: Build Electron App for 32-bit Windows
         shell: bash
         run: |
           PUBLISH_FLAG=""
