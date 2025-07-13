@@ -1,6 +1,7 @@
-name: Build and Package
+name: Build and Package (32-bit Windows)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -10,10 +11,7 @@ permissions:
 
 jobs:
   release:
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -23,26 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install Apple code signing certificate
-        if: matrix.os == 'macos-latest'
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/cert.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          echo -n "${{ secrets.APPLE_SIGNING_CERTIFICATE_BASE64 }}" | base64 --decode > $CERTIFICATE_PATH
-
-          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
-          security import $CERTIFICATE_PATH -P "${{ secrets.APPLE_SIGNING_CERTIFICATE_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychains -s $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          architecture: x86  # Ensures 32-bit Node.js
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: build Vite bundles
+      - name: Build Vite bundles
         run: yarn build
 
       - name: Get latest commit message
@@ -59,7 +43,7 @@ jobs:
             echo "publish=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Build and conditionally publish Electron app
+      - name: Build and conditionally publish 32-bit Windows app
         shell: bash
         run: |
           PUBLISH_FLAG=""
@@ -67,19 +51,6 @@ jobs:
             PUBLISH_FLAG="--publish always"
           fi
 
-          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            yarn electron-builder build --config electron-builder.config.cjs --mac $PUBLISH_FLAG
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            yarn electron-builder build --config electron-builder.config.cjs --linux $PUBLISH_FLAG
-          fi
+          yarn electron-builder build --config electron-builder.config.cjs --win --ia32 $PUBLISH_FLAG
         env:
           GH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-          APPLE_TEAM_ID: ${{ secrets.apple_team_id }}
-          APPLE_ID: ${{ secrets.apple_id }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.apple_id_password }}
-          USE_HARD_LINKS: ${{ matrix.os == 'macos-latest' && 'false' || '' }}
-
-      - name: Clean up keychain
-        if: matrix.os == 'macos-latest'
-        run: |
-          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
