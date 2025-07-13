@@ -3,8 +3,6 @@ const packageJSON = require('./package.json');
 /**
  * @type {import('electron-builder').Configuration}
  */
-const { azuresigntool } = require('@ossign/azuresigntool');
-
 const electronBuilderConfig = {
   appId: 'com.danielerolli.beaver-notes',
   files: ['packages/**/dist/**'],
@@ -36,8 +34,7 @@ const electronBuilderConfig = {
     target: [
       { target: 'portable', arch: ['ia32'] },
       { target: 'nsis', arch: ['ia32'] },
-    ],
-    sign: process.env.AST_TD === 'SHA256' ? azuresigntool : undefined,
+    ]
   },
   nsis: {
     oneClick: true,
